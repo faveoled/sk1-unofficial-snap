@@ -1,0 +1,91 @@
+name: sk1-unofficial
+summary: S
+description: |
+  D
+version: 2.0rc5
+grade: stable
+confinement: strict
+base: core20
+icon: snap/gui/sk1-unofficial.svg
+
+architectures:
+  - build-on: [amd64]
+  - build-on: [arm64]
+
+parts:
+
+  desktop-gtk3:
+    source: https://github.com/ubuntu/snapcraft-desktop-helpers.git
+    source-subdir: gtk
+    plugin: make
+    make-parameters: ["FLAVOR=gtk3"]
+    build-packages:
+      - libgtk-3-dev
+    stage-packages:
+      - libxkbcommon0  # XKB_CONFIG_ROOT
+      - ttf-ubuntu-font-family
+      - dmz-cursor-theme
+      - light-themes
+      - adwaita-icon-theme
+      - gnome-themes-standard
+      - shared-mime-info
+      - libgtk-3-0
+      - libgdk-pixbuf2.0-0
+      - libglib2.0-bin
+      - libgtk-3-bin
+      - unity-gtk3-module
+      - libappindicator3-1
+      - locales-all
+      - xdg-user-dirs
+      - ibus-gtk3
+      - libibus-1.0-5
+    override-prime: |
+      snapcraftctl prime
+      glib-compile-schemas usr/share/glib-2.0/schemas
+
+  sk1:
+    plugin: dump
+    source: https://downloads.sk1project.net/sk1/Ubuntu/python-sk1-2.0rc5_ubuntu_20.04_amd64.deb
+    stage-packages:
+      - liblcms2-2
+      - python
+      - python-cairo
+      - libmagickwand-6.q16-6
+      - python-pil
+      - python-wxgtk3.0
+      - libcups2
+    after: [desktop-gtk3]
+
+apps:
+  sk1-unofficial:
+    command: bin/desktop-launch $SNAP/usr/bin/sk1
+    desktop: usr/share/applications/sk1.desktop
+    environment:
+      PATH: $SNAP/usr/bin:$SNAP/usr/lib/sk1-wx-2.0rc5:$PATH
+      # Fallback to XWayland if running in a Wayland session.
+      DISABLE_WAYLAND: 1
+      PYTHONPATH: $SNAP/usr/lib/sk1-wx-2.0rc5:$SNAP/usr/lib/sk1-wx-2.0rc5/sk1:$SNAP/usr/lib/python2.7/dist-packages/wx-3.0-gtk3:$SNAP/usr/lib/python2/dist-packages:$SNAP/usr/lib/python2.7/site-packages:$SNAP/usr/lib/python2.7/dist-packages:$PYTHONPATH
+    plugs:
+      - x11
+      - unity7
+      - home
+      - network
+      - desktop
+      - desktop-legacy
+      - gsettings
+      - opengl
+      - removable-media
+
+plugs:
+  gtk-3-themes:
+    interface: content
+    target: $SNAP/share/themes
+    default-provider: gtk-common-themes
+  icon-themes:
+    interface: content
+    target: $SNAP/share/icons
+    default-provider: gtk-common-themes
+  sound-themes:
+    interface: content
+    target: $SNAP/share/sounds
+    default-provider: gtk-common-themes
